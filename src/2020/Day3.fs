@@ -2,7 +2,6 @@ module Year2020.Day3
 
 open System.IO
 open Scaffold.Handlers
-open Scaffold.Util.Patterns
 
 let parse path =
     File.ReadAllLines path
