@@ -1,4 +1,5 @@
 ﻿open System.IO
+open System.Diagnostics
 
 let private years = Map [
     "2020", Year2020.Index.Handler
@@ -11,7 +12,13 @@ let main args =
         printfn "Usage: aoc [year] [day] [part] [file]"
     | year :: day :: rest ->
         match Map.tryFind year years with
-        | Some handler -> handler day rest
+        | Some handler ->
+            let daySolver = handler day
+            let watch = Stopwatch()
+            watch.Start()
+            let res = daySolver rest
+            watch.Stop()
+            $"{res}\n\nRan in {watch.ElapsedMilliseconds}ms"
         | None -> failwithf "Invalid year: %s" year
         |> printfn "%s"
     | _ -> failwith "Invalid args"

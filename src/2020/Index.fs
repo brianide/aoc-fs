@@ -8,7 +8,7 @@ let private handlers = Map [
     "8", ("Handheld Halting", Day8.Solver)
 ]
 
-let Handler day args =
+let Handler day =
     match Map.tryFind day handlers with
-    | Some (_, solver) -> solver args
+    | Some (_, solver) -> solver
     | None -> failwithf "Invalid day: %s" day
