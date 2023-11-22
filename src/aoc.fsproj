@@ -6,8 +6,9 @@
   <ItemGroup>
     <Compile Include="scaffold/Util.fs" />
     <Compile Include="scaffold/Handlers.fs" />
-    <Compile Include="2020/Day2.fs" />
     <Compile Include="2020/Day1.fs" />
+    <Compile Include="2020/Day2.fs" />
+    <Compile Include="2020/Day8.fs" />
     <Compile Include="2020/Index.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>

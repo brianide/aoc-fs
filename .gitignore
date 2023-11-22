@@ -1,4 +1,4 @@
-.vscode/
+.*
 input/
 src/bin
 src/obj

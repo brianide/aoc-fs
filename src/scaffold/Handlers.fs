@@ -14,7 +14,7 @@ let stubFileHandler solve = function
 
 /// Creates a handler for solutions where both parts receive identical input from a common parsing
 /// function.
-let chainFileHandler (parse: string -> 'a) (silver: 'a -> string) (gold: 'a -> string) = function
+let chainFileHandler parse silver gold = function
 | [Part silver gold p; path] ->
     let data = parse path
     List.map (fun f -> f data) p
