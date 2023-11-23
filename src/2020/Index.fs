@@ -5,6 +5,7 @@ let private handlers = Map [
     "2", ("Password Philosophy", Day2.Solver)
     "3", ("Toboggan Trajectory", Day3.Solver)
     "4", ("Passport Processing", Day4.Solver)
+    "5", ("Binary Boarding", Day5.Solver)
     "8", ("Handheld Halting", Day8.Solver)
 ]
 
