@@ -1,4 +1,4 @@
-module Year.Day
+module Year!YEAR!.Day!DAY!
 
 open System.IO
 open Scaffold.Attributes
@@ -14,5 +14,5 @@ let solveSilver input =
 let solveGold input =
     input
 
-[<Solution("", "", "")>]
+[<Solution("!YEAR!", "!DAY!", "!NAME!")>]
 let Solver = chainFileHandler parse solveSilver solveGold
