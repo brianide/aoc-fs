@@ -12,6 +12,13 @@ let stubFileHandler solve = function
 | ["s"; path] -> solve path
 | _ -> failwith "Invalid input"
 
+/// Creates a handler for solutions where each part of the problem performs its own parsing.
+let simpleFileHandler silver gold = function
+| [Part silver gold p; path] ->
+    List.map (fun f -> f path) p
+    |> String.concat "\n"
+| _ -> failwith "Invalid input"
+
 /// Creates a handler for solutions where both parts receive identical input from a common parsing
 /// function.
 let chainFileHandler parse silver gold = function
