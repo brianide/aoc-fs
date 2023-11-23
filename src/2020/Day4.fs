@@ -2,6 +2,7 @@ module Year2020.Day4
 
 open System.IO
 open System.Text.RegularExpressions
+open Scaffold.Attributes
 open Scaffold.Handlers
 open Scaffold.Util.Patterns
 open Scaffold.Extensions
@@ -46,4 +47,5 @@ let solveGold input =
     |> List.length  
     |> sprintf "%A"
 
+[<Solution("2020", "4", "Passport Processing")>]
 let Solver = chainFileHandler parse solveSilver solveGold

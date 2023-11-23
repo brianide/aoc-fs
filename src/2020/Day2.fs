@@ -1,6 +1,7 @@
 module Year2020.Day2
 
 open System.IO
+open Scaffold.Attributes
 open Scaffold.Handlers
 open Scaffold.Util.Patterns
 
@@ -28,4 +29,5 @@ let solve checkLine =
     >> List.length
     >> sprintf "%A"
 
+[<Solution("2020", "2", "Password Philosophy")>]
 let Solver = chainFileHandler parse (solve checkSilver) (solve checkGold)

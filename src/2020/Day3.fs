@@ -1,6 +1,7 @@
 module Year2020.Day3
 
 open System.IO
+open Scaffold.Attributes
 open Scaffold.Handlers
 
 let parse path =
@@ -29,4 +30,5 @@ let solveGold grid =
     |> List.reduce (*)
     |> sprintf "%A"
 
+[<Solution("2020", "3", "Toboggan Trajectory")>]
 let Solver = chainFileHandler parse solveSilver solveGold

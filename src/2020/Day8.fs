@@ -1,6 +1,7 @@
 module Year2020.Day8
 
 open System.IO
+open Scaffold.Attributes
 open Scaffold.Handlers
 open Scaffold.Util.Patterns
 
@@ -63,4 +64,5 @@ let solveGold input =
     |> function Some n -> n | None -> failwith "Program error"
     |> sprintf "%A"
 
+[<Solution("2020", "8", "Handheld Halting")>]
 let Solver = chainFileHandler parse solveSilver solveGold

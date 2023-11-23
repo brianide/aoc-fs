@@ -1,6 +1,7 @@
 module Year2020.Day1
 
 open System.IO
+open Scaffold.Attributes
 open Scaffold.Handlers
 
 let parse = 
@@ -23,4 +24,5 @@ let solveGold (input: int list) =
     |> Seq.head
     |> string 
 
+[<Solution("2020", "1", "Report Repair")>]
 let Solver = chainFileHandler parse solveSilver solveGold

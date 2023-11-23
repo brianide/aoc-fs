@@ -4,6 +4,7 @@
     <TargetFramework>net8.0</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="scaffold/Attributes.fs" />
     <Compile Include="scaffold/Util.fs" />
     <Compile Include="scaffold/Handlers.fs" />
     <Compile Include="scaffold/Extensions.fs" />
@@ -13,7 +14,6 @@
     <Compile Include="2020/Day4.fs" />
     <Compile Include="2020/Day5.fs" />
     <Compile Include="2020/Day8.fs" />
-    <Compile Include="2020/Index.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
 </Project>

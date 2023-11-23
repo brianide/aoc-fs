@@ -1,25 +1,44 @@
 ﻿open System.IO
 open System.Diagnostics
 
-let private years = Map [
-    "2020", Year2020.Index.Handler
-]
+open System.Text.RegularExpressions
+
+open System
+open Scaffold.Attributes
+
+let solutions =
+    Reflection.Assembly.GetExecutingAssembly()
+    |> _.GetTypes()
+    |> Seq.collect _.GetProperties()
+    |> Seq.map (fun prop -> prop, Attribute.GetCustomAttribute(prop, typeof<SolutionAttribute>, false) |> Option.ofObj)
+    |> Seq.choose (function prop, Some attr -> Some (prop.GetMethod.Invoke(null, null) :?> string list -> string, attr :?> SolutionAttribute) | _, None -> None)
+    |> Seq.sortBy (fun (_, attr) -> attr.Year, attr.Id)
+    |> Seq.toList
+
+let usage =
+    solutions
+    |> List.map (fun (_, attr) -> sprintf "* %4s %3s - %s" attr.Year attr.Id attr.Name)
+    |> String.concat "\n"
+    |> sprintf "Usage: aoc [year] [day] [part] [file]\n\n%s"
 
 [<EntryPoint>]
 let main args =
     match Array.toList args with
-    | [] -> 
-        printfn "Usage: aoc [year] [day] [part] [file]"
     | year :: day :: rest ->
-        match Map.tryFind year years with
-        | Some handler ->
-            let daySolver = handler day
+        solutions
+        |> List.tryFind (fun (_, attr) -> attr.Year = year && attr.Id = day)
+        |> function
+        | Some (fn, attr) ->
             let watch = Stopwatch()
+            printfn "Running \"%s\"" attr.Name
+
             watch.Start()
-            let res = daySolver rest
+            let res = fn rest
             watch.Stop()
+
             $"{res}\n\nRan in {watch.ElapsedMilliseconds}ms"
-        | None -> failwithf "Invalid year: %s" year
+        | None -> failwithf "Invalid solution specified\n\n%s" usage
         |> printfn "%s"
-    | _ -> failwith "Invalid args"
-    0
+        0
+    | _ -> 
+        failwith usage

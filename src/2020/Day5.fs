@@ -1,6 +1,7 @@
 module Year2020.Day5
 
 open System.IO
+open Scaffold.Attributes
 open Scaffold.Handlers
 open Scaffold.Util.Patterns
 
@@ -29,4 +30,5 @@ let solveGold input =
     |> (+) 1
     |> sprintf "%A"
 
+[<Solution("2020", "5", "Binary Boarding")>]
 let Solver = chainFileHandler parse solveSilver solveGold
