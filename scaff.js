@@ -25,28 +25,27 @@ for (const day of days.split(",").map(n => +n)) {
     // Get problem name
     const page = await fetch(`https://adventofcode.com/${year}/day/${day}`).then(r => r.text());
     const name = /<h2>--- Day \d+: (.+) ---<\/h2>/.exec(page)[1];
+    console.log(`Getting problem name`);
 
     // Make solution file
     const fileText = (await Deno.readTextFile("DayTemplate.fs")).replace(/![A-Z]+?!/g, k => {
-        return {
-            "!YEAR!": year,
-            "!DAY!": day,
-            "!NAME!": name
-        }[k];
+        return { year, day, name }[k.slice(1, -1).toLowerCase()];
     });
     await Deno.writeTextFile(`src/${year}/Day${day}.fs`, fileText);
+    console.log(`Making file for solution`);
 
     // Add file to project
     const projText = (await Deno.readTextFile("src/aoc.fsproj")).split("\n");
     projText.splice(projText.findIndex(l => l.includes("<!--NEW-->")), 0, `    <Compile Include="${year}/Day${day}.fs" />`);
     await Deno.writeTextFile("src/aoc.fsproj", projText.join("\n"));
     await wait(1500);
+    console.log(`Adding file to project`);
 
     // Get problem input
     const dest = `input/${year}/real/day${day}.txt`;
     if (await exists(dest))
         continue;
-    console.log(`Pulling input to ${dest}`)
+    console.log(`Pulling input`);
 
     const text = await fetch(`https://adventofcode.com/${year}/day/${day}/input`, {
         headers: {

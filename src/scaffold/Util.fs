@@ -23,3 +23,39 @@ module Patterns =
         match mat.Success, mat.Groups with
         | true, groups -> Seq.tail groups |> Seq.map (fun n -> n.Value) |> Seq.toList |> Some
         | false, _ -> None
+
+module Collections =
+
+    module Queue =
+        type Queue<'a> = Queue of 'a list * 'a list
+
+        let empty = Queue ([], [])
+
+        let singleton e = Queue ([], [e])
+
+        let isEmpty = function Queue ([], []) -> true | _ -> false
+
+        let length = function Queue (ins, outs) -> List.length ins + List.length outs
+
+        let contains e = function
+            | Queue (ins, outs) -> List.contains e ins || List.contains e outs
+
+        let head = function
+            | Queue ([], []) -> failwith "No elements remaining"
+            | Queue (ins, []) -> List.last ins
+            | Queue (_, outs) -> List.head outs
+
+        let enqueue e q =
+            match q with Queue (ins, outs) -> Queue(e :: ins, outs)
+        
+        let dequeue = function
+            | Queue ([], []) -> failwith "No elements remaining"
+            | Queue (ins, e :: outs) -> (e, Queue (ins, outs))
+            | Queue (ins, []) ->
+                let outs = List.rev ins
+                (List.head outs, Queue ([], List.tail outs))
+
+        let toSeq = function
+            | Queue (ins, outs) -> Seq.append outs (List.rev ins)
+
+        let ofList s = Queue ([], s)
