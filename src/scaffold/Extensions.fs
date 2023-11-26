@@ -14,7 +14,15 @@ module Array2D  =
         Array2D.iteri (fun r c v -> acc <- folder acc r c v) arr
         acc
 
+module String =
+
+    let splitAt n (str: string) =
+        let fore = str.Substring(0, n)
+        let aft = str.Substring(n)
+        (fore, aft)
+
 module Seq =
+
     let toPair (coll: seq<'T>) =
         Seq.toList coll
         |> function
