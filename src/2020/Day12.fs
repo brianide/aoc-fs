@@ -29,27 +29,23 @@ let parse path =
     |> Array.toList
     |> List.map (|Nav|)
 
-module Silver =
-    let icos = function 0 -> 1 | 90 -> 0 | 180 -> -1 | 270 -> 0 | x -> failwithf "Invalid input: %i" x
-    let isin = function 0 -> 0 | 90 -> 1 | 180 -> 0 | 270 -> -1 | x -> failwithf "Invalid input: %i" x
+let rotate x y = function
+| 0 -> x, y
+| 90 -> -y, x
+| 180 -> -x, -y
+| 270 -> y, -x
+| x -> failwithf "Invalid angle: %i" x
 
-    let solve input =
-        let folder (dir, x, y) = function
-        | Move (dx, dy) -> (dir, x + dx, y + dy)
-        | Rotate n -> ((dir + n) % 360, x, y)
-        | Fore n -> (dir, x + n * icos dir, y + n * isin dir)
+let solveSilver input =
+    let folder ((x, y), (hx, hy)) = function
+    | Move (dx, dy) -> ((x + dx, y + dy), (hx, hy))
+    | Rotate angle -> ((x, y), rotate hx hy angle)
+    | Fore n -> ((x + hx * n, y + hy * n), (hx, hy))
 
-        List.fold folder (0, 0, 0) input
-        |> fun (_, x, y) -> abs x + abs y |> string
+    List.fold folder ((0, 0), (1, 0)) input
+    |> fun ((x, y), _) -> abs x + abs y |> string
 
 let solveGold input =
-    let rotate x y = function
-    | 0 -> x, y
-    | 90 -> -y, x
-    | 180 -> -x, -y
-    | 270 -> y, -x
-    | x -> failwithf "Invalid angle: %i" x
-
     let folder ((x, y), (bx, by)) = function
     | Move (dx, dy) -> ((x, y), (bx + dx, by + dy))
     | Rotate angle -> ((x, y), rotate bx by angle)
@@ -59,4 +55,4 @@ let solveGold input =
     |> fun ((x, y), _) -> abs x + abs y |> string
 
 [<Solution("2020", "12", "Rain Risk")>]
-let Solver = chainFileHandler parse Silver.solve solveGold
+let Solver = chainFileHandler parse solveSilver solveGold
