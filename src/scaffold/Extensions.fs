@@ -19,6 +19,26 @@ module Seq =
 
         Seq.fold folder None coll
 
+    let partitionBy f (source: seq<_>) =
+        use e = source.GetEnumerator()
+        let mutable group = List.empty
+        let mutable fv = None
+        seq {
+            while e.MoveNext() do
+                match fv, f e.Current with
+                | None, fcurr ->
+                    fv <- Some fcurr
+                    group <- e.Current :: group
+                | Some p, fcurr when p = fcurr ->
+                    group <- e.Current :: group
+                | _, fcurr ->
+                    yield List.rev group
+                    group <- [e.Current]
+                    fv <- Some fcurr
+            
+            yield List.rev group
+        }
+
 module Map =
     let getOrDefault k def map =
         match Map.tryFind k map with
