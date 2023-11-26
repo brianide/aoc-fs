@@ -2,6 +2,18 @@ module Scaffold.Extensions
 
 open System.Collections
 
+module Array2D  =
+
+    let fold folder init arr =
+        let mutable acc = init
+        Array2D.iter (fun v -> acc <- folder acc v) arr
+        acc
+
+    let foldi folder init arr =
+        let mutable acc = init
+        Array2D.iteri (fun r c v -> acc <- folder acc r c v) arr
+        acc
+
 module Seq =
     let toPair (coll: seq<'T>) =
         Seq.toList coll

@@ -5,9 +5,10 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="scaffold/Attributes.fs" />
-    <Compile Include="scaffold/Util.fs" />
     <Compile Include="scaffold/Handlers.fs" />
     <Compile Include="scaffold/Extensions.fs" />
+    <Compile Include="scaffold/Util.fs" />
+    <Compile Include="scaffold/Image.fs" />
     <Compile Include="2020/Day1.fs" />
     <Compile Include="2020/Day2.fs" />
     <Compile Include="2020/Day3.fs" />
@@ -18,6 +19,7 @@
     <Compile Include="2020/Day8.fs" />
     <Compile Include="2020/Day9.fs" />
     <Compile Include="2020/Day10.fs" />
+    <Compile Include="2020/Day11.fs" />
     <!--NEW-->
     <Compile Include="Program.fs" />
   </ItemGroup>

@@ -3,6 +3,7 @@ module Year!YEAR!.Day!DAY!
 open System.IO
 open Scaffold.Attributes
 open Scaffold.Handlers
+open Scaffold.Extensions
 open Scaffold.Util.Patterns
 
 let parse path =
