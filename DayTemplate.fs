@@ -10,10 +10,10 @@ let parse path =
     "Not implemented"
 
 let solveSilver input =
-    input
+    "Not implemented"
 
 let solveGold input =
-    input
+    "Not implemented"
 
 [<Solution("!YEAR!", "!DAY!", "!NAME!")>]
 let Solver = chainFileHandler parse solveSilver solveGold

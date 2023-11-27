@@ -8,6 +8,9 @@ module Inspect =
 
 
 module Patterns =
+    let (|TryParse|_|) fn (x: string) =
+        try fn x |> Some with :? System.FormatException -> None
+
     let (|Int32|_|) (x: string) =
         try int x |> Some with :? System.FormatException -> None
 

@@ -30,13 +30,12 @@ let main args =
         |> function
         | Some (fn, attr) ->
             let watch = Stopwatch()
-            printfn "Running \"%s\"" attr.Name
 
             watch.Start()
             let res = fn rest
             watch.Stop()
 
-            $"{res}\n\nRan in {watch.ElapsedMilliseconds}ms"
+            $"{res}\n\n{attr.Name}\nRan in {watch.ElapsedMilliseconds}ms"
         | None -> failwithf "Invalid solution specified\n\n%s" usage
         |> printfn "%s"
         0
