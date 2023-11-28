@@ -61,14 +61,14 @@ module Gold =
 
     let rec genAddrs (baseAddr: uint64) (mask: uint64) prev =
         let count = BitOperations.TrailingZeroCount mask
-        if (count > 36) then
+        if (count = 64) then
             Seq.singleton baseAddr
         else
             let nextMask = mask >>> (count + 1)
-            let off = count + prev
+            let off = prev + count
             Seq.concat [
                 genAddrs baseAddr nextMask (off + 1)
-                genAddrs (baseAddr ^^^ (1UL <<< (off + prev))) nextMask (off + 1)
+                genAddrs (baseAddr ^^^ (1UL <<< off)) nextMask (off + 1)
             ]
     
     let solve path =
