@@ -1,6 +1,7 @@
 module Year2020.Day15
 
 open System.IO
+open System.Collections.Generic
 open Scaffold.Attributes
 open Scaffold.Handlers
 open Scaffold.Extensions
@@ -14,18 +15,20 @@ let parse =
 
 let solve index input =
     let len = Seq.length input
-    let unfolder (prev, ind, log) =
+    let mutable log = Dictionary<int, int>()
+
+    let unfolder (prev, ind) =
         let say =
             if ind < len then
                 Seq.item ind input
             else
-                match Map.tryFind prev log with
-                | Some j -> ind - j
-                | None -> 0
-        let log = Map.add prev ind log
-        Some (say, (say, ind + 1, log))
+                match log.TryGetValue prev with
+                | true, j -> ind - j
+                | false, _ -> 0        
+        log[prev] <- ind
+        Some (say, (say, ind + 1))
 
-    Seq.unfold unfolder (-1, 0, Map.empty)
+    Seq.unfold unfolder (-1, 0)
     |> Seq.item (index - 1)
     |> sprintf "%i"
 
