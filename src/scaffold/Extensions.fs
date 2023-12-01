@@ -1,6 +1,7 @@
 module Scaffold.Extensions
 
 open System.Collections
+open System.Text.RegularExpressions
 
 module Array2D  =
 
@@ -67,3 +68,6 @@ module Map =
 
     let update k def fn map =
         Map.change k (function Some n -> Some (fn n) | None -> Some def) map
+
+type Regex with
+    member reg.MatchSeq = reg.Matches >> Seq.map _.Value
