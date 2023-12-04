@@ -27,7 +27,11 @@
     <Compile Include="2023/Day1.fs" />
     <Compile Include="2023/Day2.fs" />
     <Compile Include="2023/Day3.fs" />
+    <Compile Include="2023/Day4.fs" />
     <!--NEW-->
     <Compile Include="Program.fs" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="FParsec" Version="1.1.1" />
   </ItemGroup>
 </Project>

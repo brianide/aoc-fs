@@ -24,6 +24,15 @@ module String =
 
 module Seq =
 
+    let takeUpTo lim (coll: seq<_>) =
+        use enum = coll.GetEnumerator()
+        let mutable n = lim
+        seq {
+            while n > 0 && enum.MoveNext() do
+                yield enum.Current
+                n <- n - 1
+        }
+
     let toPair (coll: seq<'T>) =
         Seq.toList coll
         |> function
