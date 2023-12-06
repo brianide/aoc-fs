@@ -8,8 +8,8 @@ open Scaffold.Extensions
 open Scaffold.Util.Patterns
 
 let parse path =
-    let ws = skipMany (pchar ' ')
-    let nums = many1 (pint32 .>> ws) .>> newline
+    let ws = skipMany (skipChar ' ')
+    let nums = many1 (pint64 .>> ws) .>> newline
     let spec =
         tuple2 (skipString "Time:" >>. spaces >>. nums) (skipString "Distance:" >>. spaces >>. nums)
         |>> fun (a, b) -> Seq.zip a b
@@ -20,24 +20,7 @@ let parse path =
     | Success (res, _, _) -> res
     | Failure (msg, _, _) -> failwith msg
 
-let solveSilver input =
-    let mutable prod = 1
-    for (time, dist) in input do
-        let mutable count = 0
-        for hold in 1 .. time / 2 do
-            let trav = time - hold
-            if hold * trav > dist then
-                count <- count + if hold = trav then 1 else 2
-        prod <- prod * count
-    string prod
-
-let digits n =
-    let rec helper i = function
-    | 0 -> i
-    | n -> helper (i + 1) (n / 10)
-    helper 0 n
-
-let binsearch fn min max target =
+let binarySearch fn min max target =
     let rec helper l r =
         if l = r then
             l
@@ -50,18 +33,29 @@ let binsearch fn min max target =
                 helper l m
     helper min max
 
-let solveGold input =
+let countWays (time, dist) =
+    binarySearch (fun n -> n * (time - n)) 1L (time / 2L) dist
+    |> fun n -> time - 2L * n + 1L
+
+let solveSilver =
+    Seq.map countWays
+    >> Seq.reduce (*)
+    >> sprintf "%d"
+
+let solveGold =
+    let countDigits n =
+        let rec helper i = function
+        | 0L -> i
+        | n -> helper (i + 1) (n / 10L)
+        helper 0 n
+
     let combineDigits (a, b) (c, d) =
-        let comb x y = (pown 10 (digits y) |> int64) * x + (int64 y)
+        let comb x y = (pown 10 (countDigits y) |> int64) * x + (int64 y)
         comb a c, comb b d
 
-    let countWays (time, dist) =
-        binsearch (fun n -> n * (time - n)) 1L (time / 2L) dist
-        |> fun n -> time - 2L * n + 1L
-
-    Seq.fold combineDigits (0L, 0L) input
-    |> countWays
-    |> sprintf "%d"
+    Seq.fold combineDigits (0L, 0L)
+    >> countWays
+    >> sprintf "%d"
 
 [<Solution("2023", "6", "Wait For It")>]
 let Solver = chainFileHandler parse solveSilver solveGold
