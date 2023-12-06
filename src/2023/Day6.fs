@@ -5,36 +5,20 @@ open FParsec
 open Scaffold.Attributes
 open Scaffold.Handlers
 open Scaffold.Extensions
-open Scaffold.Util.Patterns
+open Scaffold.Parsec
+open Scaffold.Util.Search
 
-let parse path =
-    let ws = skipMany (skipChar ' ')
-    let nums = many1 (pint64 .>> ws) .>> newline
+let parse =
+    let nums = many1 (pint64 .>> space) .>> newline
     let spec =
         tuple2 (skipString "Time:" >>. spaces >>. nums) (skipString "Distance:" >>. spaces >>. nums)
         |>> fun (a, b) -> Seq.zip a b
     
-    File.ReadAllText path
-    |> run spec 
-    |> function
-    | Success (res, _, _) -> res
-    | Failure (msg, _, _) -> failwith msg
-
-let binarySearch fn min max target =
-    let rec helper l r =
-        if l = r then
-            l
-        else
-            let m = (l + r) / 2L
-            let a = fn m
-            if a <= target then
-                helper (m + 1L) r
-            else
-                helper l m
-    helper min max
+    File.ReadAllText
+    >> getParsed spec
 
 let countWays (time, dist) =
-    binarySearch (fun n -> n * (time - n)) 1L (time / 2L) dist
+    binarySearch (fun n -> n * (time - n)) dist 1L (time / 2L)
     |> fun n -> time - 2L * n + 1L
 
 let solveSilver =

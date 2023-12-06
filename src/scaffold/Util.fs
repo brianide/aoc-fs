@@ -6,6 +6,21 @@ module Inspect =
     let inline tap f v = f v; v
     let inline tapIter f v = Seq.iter f v; v
 
+module Search =
+    let inline binarySearch fn target min max =
+        let one = LanguagePrimitives.GenericOne
+        let two = one + one
+        let rec helper l r =
+            if l = r then
+                l
+            else
+                let m = (l + r) / two
+                let a = fn m
+                if a <= target then
+                    helper (m + one) r
+                else
+                    helper l m
+        helper min max
 
 module Patterns =
     let (|TryParse|_|) fn (x: string) =
