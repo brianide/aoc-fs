@@ -6,7 +6,6 @@ open Scaffold.Attributes
 open Scaffold.Handlers
 open Scaffold.Extensions
 open Scaffold.Parsec
-open Scaffold.Util.Search
 
 let parse =
     let nums = many1 (pint64 .>> space) .>> newline
@@ -17,12 +16,13 @@ let parse =
     File.ReadAllText
     >> getParsed spec
 
-let countWays (time, dist) =
-    binarySearch (fun n -> n * (time - n)) dist 1L (time / 2L)
-    |> fun n -> time - 2L * n + 1L
+let solveRace (time, targ) =
+    let time', targ' = double time, double targ + 1.0
+    let hold = (-time' + sqrt(time' ** 2.0 - 4.0 * targ')) / -2.0 |> ceil |> int64
+    time - 2L * hold + 1L
 
 let solveSilver =
-    Seq.map countWays
+    Seq.map solveRace
     >> Seq.reduce (*)
     >> sprintf "%d"
 
@@ -38,7 +38,7 @@ let solveGold =
         comb a c, comb b d
 
     Seq.fold combineDigits (0L, 0L)
-    >> countWays
+    >> solveRace
     >> sprintf "%d"
 
 [<Solution("2023", "6", "Wait For It")>]
