@@ -23,6 +23,23 @@ module String =
         (fore, aft)
 
 module Seq =
+    /// Splits the sequence into two lists according to the given predicate function.
+    /// Returns a tuple of two lists containing the sequence elements for which the
+    /// predicate returns true and false, respectively.
+    let splitWith pred (coll: seq<_>) =
+        let mutable tru = []
+        let mutable fal = []
+        use enum = coll.GetEnumerator()
+        while enum.MoveNext() do
+            if pred enum.Current then
+                tru <- enum.Current :: tru
+            else
+                fal <- enum.Current :: fal
+        List.rev tru, List.rev fal
+
+    let frequencies (coll: seq<_>) =
+        Seq.groupBy id coll
+        |> Seq.map (fun (i, is) -> i, Seq.length is)
 
     let takeUpTo lim (coll: seq<_>) =
         use enum = coll.GetEnumerator()
