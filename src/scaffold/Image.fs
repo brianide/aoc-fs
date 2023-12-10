@@ -1,4 +1,4 @@
-module Image
+module Scaffold.Image
 
 open System.IO
 open System.Text
@@ -23,7 +23,7 @@ let saveToPGM width height path byteFn =
 
     for i in 0 .. width * height - 1 do
         let r, c = i / width, i % width
-        body[i + offset] <- byteFn c r
+        body[i + offset] <- byteFn r c
 
     File.WriteAllBytes(path, body)
 
@@ -40,7 +40,7 @@ let saveToPPM width height path byteFn =
 
     for i in 0 .. width * height - 1 do
         let r, c = i / width, i % width
-        let (red, green, blue) = byteFn c r
+        let (red, green, blue) = byteFn r c
         body[i * 3 + offset] <- red
         body[i * 3 + offset + 1] <- green
         body[i * 3 + offset + 2] <- blue
