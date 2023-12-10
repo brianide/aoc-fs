@@ -62,25 +62,6 @@ let getPath (tiles, start, dims) =
     traverse dir [start]
     |> List.rev
     |> fun p -> p, dims
-    
-    // let neighbors p =
-    //     [0, -1; 0, 1; -1, 0; 1, 0]
-    //     |> List.map (tadd p)
-    //     |> List.filter (fun p -> Set.contains p tiles)
-
-    // let rec bfs queue visited depth =
-    //     if List.isEmpty queue then
-    //         depth
-    //     else
-    //         queue
-    //         |> List.collect neighbors
-    //         |> List.filter (fun p -> Set.contains p visited |> not)
-    //         |> fun ps -> ps, Set.union visited (set ps), depth + 1
-    //         |||> bfs
-            
-    // bfs [start] (Set.singleton start) 0
-    // |> fun d -> d / 3
-    // |> sprintf "%d"
 
 let solveSilver (path, _) =
     List.length path / 6
@@ -89,6 +70,12 @@ let solveSilver (path, _) =
 type Dir = N | S | E | W
 
 let solveGold (path, (rows, cols)) =
+    let mutable frame = 0
+    let framenum () =
+        let f = sprintf ".frames/%06d.pgm" frame
+        frame <- frame + 1
+        f
+
     let segments = 
         List.pairwise path
         |> List.map (fun (a, b) -> b |> tmul -1 |> tadd a)
@@ -123,22 +110,28 @@ let solveGold (path, (rows, cols)) =
 
     // 2D array to keep track of visited tiles
     let visited = Array2D.create rows cols false
-    for (r, c) in path do visited[r, c] <- true
+    for i, (r, c) in List.indexed path do
+        visited[r, c] <- true
+        if i % 72 = 0 then
+            saveToPGM cols rows (framenum ()) (fun cr cc ->
+                if (r, c) = (cr, cc) then byte 255
+                else if visited[cr, cc] then byte 127
+                else byte 0)
 
     // Floodfill
     let rec bfs queue depth =
         if List.isEmpty queue then
             depth
         else
-            // printfn "%A" queue.Length
-            // let queueset = set queue
-            // saveToPGM cols rows (sprintf ".frames/%04d.pgm" depth) (fun r c ->
-            //     if Set.contains (r, c) queueset then
-            //         byte 255
-            //     else if visited[r, c] then
-            //         byte 127
-            //     else
-            //         byte 0)
+            printfn "%A" queue.Length
+            let queueset = set queue
+            saveToPGM cols rows (framenum ()) (fun r c ->
+                if Set.contains (r, c) queueset then
+                    byte 255
+                else if visited[r, c] then
+                    byte 127
+                else
+                    byte 0)
             [ for p in queue do
                 for off in [-1, 0; 1, 0; 0, -1; 0, 1] do
                     let (r, c) = tadd p off
@@ -152,11 +145,18 @@ let solveGold (path, (rows, cols)) =
     bfs [fillBegin] 0 |> ignore
 
     // Remove tiles adjacent to pipes
-    for (r, c) in path do
+    for i, (r, c) in List.indexed path do
         for ro in -1..1 do
             for co in -1..1 do
                 if ro <> 0 || co <> 0 then
                     visited[r + ro, c + co] <- false
+                    
+        if i % 72 = 0 then
+            saveToPGM cols rows (framenum ()) (fun cr cc ->
+                            if (r, c) = (cr, cc) then byte 255
+                            else if visited[cr, cc] then byte 127
+                            else byte 0)
+
 
     Array2D.fold (fun acc v -> if v then acc + 1 else acc) 0 visited / 9
     |> sprintf "%d"
