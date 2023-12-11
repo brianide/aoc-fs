@@ -4,38 +4,32 @@ open System.IO
 open Scaffold.Attributes
 open Scaffold.Handlers
 open Scaffold.Extensions
-open Scaffold.Image
 
-let parse path =
-    let space =
-        File.ReadAllLines path
-        |> Seq.map seq
-        |> array2D
-    
-    space
-    |> Array2D.foldi (fun acc r c -> function '#' -> (r, c) :: acc | _ -> acc) []
-    |> fun p -> p, (Array2D.length1 space, Array2D.length2 space)
+let parse =
+    File.ReadAllLines
+    >> Seq.map seq
+    >> array2D
+    >> Array2D.foldi (fun acc r c -> function '#' -> (int64 r, int64 c) :: acc | _ -> acc) []
+    >> fun p -> p
 
-let solveSilver (gals, _) =
+let solve factor galaxies =
     let expanded =
-        gals
-        |> List.sortBy fst 
-        |> fun l -> (0, 0) :: l
+        galaxies
+        |> List.sortBy fst
+        |> fun l -> (0L, 0L) :: l
         |> List.pairwise
-        |> List.fold (fun (exp, ps) ((pr, _), (r, c)) ->
-            let dist = r - pr - 1 |> max 0
-            let exp = exp + dist
-            exp, (r + exp, c) :: ps) (0, [])
-        |> snd
+        |> List.map (fun ((pr, _), (r, c)) -> r - pr, c)
+        |> List.scan (fun (racc, _) (dr, c) ->
+            let racc = racc + if dr > 1L then (dr - 1L) * factor + 1L else dr
+            racc, c) (0L, 0L)
         |> List.sortBy snd 
-        |> fun l -> (0, 0) :: l
+        |> fun l -> (0L, 0L) :: l
         |> List.pairwise
-        |> List.fold (fun (exp, ps) ((_, pc), (r, c)) ->
-            let dist = c - pc - 1 |> max 0
-            let exp = exp + dist
-            exp, (r, c + exp) :: ps) (0, [])
-        |> snd
-        |> List.sort
+        |> List.map (fun ((_, pc), (r, c)) -> r, c - pc)
+        |> List.scan (fun (_, cacc) (r, dc) ->
+            let cacc = cacc + if dc > 1L then (dc - 1L) * factor + 1L else dc
+            r, cacc) (0L, 0L)
+        |> List.skip 2
 
     expanded
     |> Seq.tails
@@ -46,8 +40,5 @@ let solveSilver (gals, _) =
         |> List.sumBy (fun (r, c) -> abs (r - sr) + abs (c - sc)))
     |> sprintf "%d"
 
-let solveGold input =
-    "Not implemented"
-
 [<Solution("2023", "11", "Cosmic Expansion")>]
-let Solver = chainFileHandler parse solveSilver solveGold
+let Solver = chainFileHandler parse (solve 2L) (solve 1000000L)
