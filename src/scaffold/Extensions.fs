@@ -37,6 +37,12 @@ module Seq =
                 fal <- enum.Current :: fal
         List.rev tru, List.rev fal
 
+    let rec tails col = seq {
+        if Seq.isEmpty col |> not then
+            yield col
+            yield! tails (Seq.tail col)
+    }
+
     let frequencies (coll: seq<_>) =
         Seq.groupBy id coll
         |> Seq.map (fun (i, is) -> i, Seq.length is)
