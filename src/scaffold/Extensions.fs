@@ -43,6 +43,18 @@ module Seq =
             yield! tails (Seq.tail col)
     }
 
+    let join (delim: 'a) (colls: seq<seq<'a>>) =
+        let mutable first = true
+        seq {
+            for items in colls do
+                yield! items
+                if first then
+                    first <- false
+                else
+                    yield delim
+        }
+
+
     let frequencies (coll: seq<_>) =
         Seq.groupBy id coll
         |> Seq.map (fun (i, is) -> i, Seq.length is)

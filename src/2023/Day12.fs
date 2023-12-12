@@ -1,57 +1,48 @@
 module Year2023.Day12
 
 open System.IO
+open System.Collections.Generic
 open Scaffold.Attributes
 open Scaffold.Handlers
 open Scaffold.Extensions
-open Scaffold.Util.Patterns
 
-#nowarn "25"
-
-let parse =
+let parse reps =
     let parseLine (line: string) =
-        let [| springs; nono |] = line.Split(' ')
-        let temp = Seq.map (function '#' -> 1 | _ -> 0) springs |> Seq.toArray |> Array.insertAt 0 0
-        let wilds = Seq.indexed springs |> Seq.collect (function i, '?' -> [i] | _ -> []) |> Seq.toList
-        let nono = nono |> _.Split(',') |> Seq.map int |> Seq.toList
-        temp, wilds, nono
+        let tokens = line.Split(' ')
+        let springs = tokens[0] |> Seq.replicate reps |> String.concat "?" |> Seq.toList
+        let groups = tokens[1] |> Seq.replicate reps |> String.concat "," |> _.Split(',') |> Seq.map int |> Seq.toList
+        springs, groups
 
     File.ReadAllLines
     >> Seq.map parseLine
     >> Seq.toList
 
-let groups line =
-    Seq.partitionBy id line
-    |> Seq.filter (Seq.head >> (=) 1)
-    |> Seq.map Seq.length
-    |> Seq.toList
+let countPerms =
+    let cache = Dictionary<_,_>()
 
-let perms (line: int[]) wilds =
-    let rec helper wilds = seq {
-        match wilds with
-        | ind :: more ->
-            line[ind + 1] <- 0
-            yield! helper more
-            line[ind + 1] <- 1
-            yield! helper more
-        | [] ->
-            yield line |> Array.toList
-    }
-    helper wilds
-    |> Seq.toList
+    let rec helper state =
+        match cache.TryGetValue state with
+        | true, v -> v
+        | false, _ -> 
+            match state with
+            | '.' :: springs, 0, groups -> helper (springs, 0, groups)
+            | '.' :: springs, n, m :: groups when n = m -> helper (springs, 0, groups)
+            | '.' :: _, _, _ -> 0L
+            | '#' :: springs, n, m :: groups when n < m -> helper (springs, n + 1, m :: groups)
+            | '#' :: _, _, _ -> 0L
+            | '?' :: springs, n, groups -> helper ('.' :: springs, n, groups) + helper ('#' :: springs, n, groups)
+            | [], 0, [] -> 1L
+            | [], n, [m] when n = m -> 1L
+            | [], _, _ -> 0L
+            | x -> failwithf "Unhandled case: %A" x
+            |> fun res -> cache.Add(state, res); res
 
+    fun (springs, groups) -> helper (springs, 0, groups)
 
-let solveSilver input =
-    input
-    |> Seq.sumBy (fun (temp, wilds, nono) ->
-        perms temp wilds
-        |> List.map groups
-        |> List.filter ((=) nono)
-        |> List.length)
-    |> sprintf "%d"
-
-let solveGold input =
-    "Not implemented"
+let solve reps =
+    parse reps
+    >> Seq.sumBy countPerms
+    >> sprintf "%d"
 
 [<Solution("2023", "12", "Hot Springs")>]
-let Solver = chainFileHandler parse solveSilver solveGold
+let Solver = simpleFileHandler (solve 1) (solve 5)
