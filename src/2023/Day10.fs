@@ -61,18 +61,25 @@ let getPath (tiles, start, dims) =
     
     traverse dir [start]
     |> List.rev
-    |> fun p -> p, dims
+    |> fun p -> p, dims, tiles
 
-let solveSilver (path, _) =
+let solveSilver (path, _, _) =
     List.length path / 6
     |> sprintf "%d"
 
 type Dir = N | S | E | W
 
-let solveGold (path, (rows, cols)) =
+module Colors =
+    let Black = 0x070600 |> intToRGB
+    let Salmon = 0xEA526F |> intToRGB
+    let White = 0xF7F7FF |> intToRGB
+    let Cyan = 0x23B5D3 |> intToRGB
+    let Blue = 0x279AF1 |> intToRGB
+
+let solveGold (path, (rows, cols), tiles) =
     let mutable frame = 0
     let framenum () =
-        let f = sprintf ".frames/%06d.pgm" frame
+        let f = sprintf ".frames/%06d.ppm" frame
         frame <- frame + 1
         f
 
@@ -108,15 +115,18 @@ let solveGold (path, (rows, cols)) =
         | x -> failwithf "Unhandled start case: %A" x
         |> tadd (List.item 2 path)
 
+    let pipes = set tiles
+    let pathset = set path
+
     // 2D array to keep track of visited tiles
     let visited = Array2D.create rows cols false
     for i, (r, c) in List.indexed path do
         visited[r, c] <- true
         if i % 72 = 0 then
-            saveToPGM cols rows (framenum ()) (fun cr cc ->
-                if (r, c) = (cr, cc) then byte 255
-                else if visited[cr, cc] then byte 127
-                else byte 0)
+            saveToPPM cols rows (framenum ()) (fun cr cc ->
+                if visited[cr, cc] then Colors.Cyan
+                else if Set.contains (cr, cc) pipes then intToRGB 0x2f3030
+                else Colors.Black)
 
     // Floodfill
     let rec bfs queue depth =
@@ -125,13 +135,15 @@ let solveGold (path, (rows, cols)) =
         else
             printfn "%A" queue.Length
             let queueset = set queue
-            saveToPGM cols rows (framenum ()) (fun r c ->
+            saveToPPM cols rows (framenum ()) (fun r c ->
                 if Set.contains (r, c) queueset then
-                    byte 255
+                    Colors.White
+                else if Set.contains (r, c) pathset then
+                    Colors.Blue
                 else if visited[r, c] then
-                    byte 127
+                    Colors.Cyan
                 else
-                    byte 0)
+                    Colors.Black)
             [ for p in queue do
                 for off in [-1, 0; 1, 0; 0, -1; 0, 1] do
                     let (r, c) = tadd p off
@@ -151,12 +163,15 @@ let solveGold (path, (rows, cols)) =
                 if ro <> 0 || co <> 0 then
                     visited[r + ro, c + co] <- false
                     
-        if i % 72 = 0 then
-            saveToPGM cols rows (framenum ()) (fun cr cc ->
-                            if (r, c) = (cr, cc) then byte 255
-                            else if visited[cr, cc] then byte 127
-                            else byte 0)
+        if i % 144 = 0 then
+            saveToPPM cols rows (framenum ()) (fun cr cc ->
+                if Set.contains (cr, cc) pathset then Colors.Blue
+                else if visited[cr, cc] then Colors.White
+                else Colors.Black)
 
+    saveToPPM cols rows (framenum ()) (fun cr cc ->
+            if visited[cr, cc] then Colors.White
+            else Colors.Black)
 
     Array2D.fold (fun acc v -> if v then acc + 1 else acc) 0 visited / 9
     |> sprintf "%d"
