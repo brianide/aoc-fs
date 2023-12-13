@@ -33,19 +33,49 @@ let solveGrid (grid: char[][]) =
     |> function
     | Some n -> n * 100
     | None ->
-        let grid = Array.transpose grid
-        [1 .. grid.Length - 1]
-        |> List.tryFind (isPivot grid)
+        let xpose = Array.transpose grid
+        [1 .. xpose.Length - 1]
+        |> List.tryFind (isPivot xpose)
         |> function
         | Some n -> n
-        | None -> failwith "No inflection point found"
+        | None -> failwithf "No inflection point found:\n%A" grid
 
 let solveSilver input =
     Seq.sumBy solveGrid input
     |> sprintf "%d"
 
+let diffGrid (grid: char[][]) =
+    let diffOver grid i = 
+        Array.splitAt i grid
+        |> fun (a, b) -> Array.rev a, b
+        ||> matchLengths
+        ||> Array.map2 (fun a b ->
+            (a, b)
+            ||> Array.map2 (fun a b ->
+                if a <> b then
+                    Some i
+                else
+                    None)
+            |> Seq.choose id)
+        |> Seq.collect id
+
+    [1 .. grid.Length - 1]
+    |> List.map (diffOver grid)
+    |> Seq.tryPick Seq.tryExactlyOne
+    |> function
+    | Some n -> n * 100
+    | None ->
+        let xpose = Array.transpose grid
+        [1 .. xpose.Length - 1]
+        |> List.map (diffOver xpose)
+        |> Seq.tryPick Seq.tryExactlyOne
+        |> function
+        | Some n -> n
+        | None -> failwithf "No inflection point found:\n%A" grid
+
 let solveGold input =
-    "Not implemented"
+    Seq.sumBy diffGrid input
+    |> sprintf "%d"
 
 [<Solution("2023", "13", "Point of Incidence")>]
 let Solver = chainFileHandler parse solveSilver solveGold
