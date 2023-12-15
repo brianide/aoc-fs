@@ -7,9 +7,11 @@ open Scaffold.Extensions
 
 let parse =
     File.ReadAllLines
-    >> array2D
+    >> Seq.map Seq.toList
+    >> Seq.toList
 
-let solveSilver (input: char[,]) =
+/// Roll stones toward the end of each row (ie. to the right).
+let rollStones =
     let rec roll run acc col =
         match col, run with
         | '.' :: rest, run -> roll ('.' :: run) acc rest
@@ -24,13 +26,35 @@ let solveSilver (input: char[,]) =
             |> fun s -> List.concat [acc; s]
         | x -> failwithf "Invalid state:\n%A" x
 
-    seq { for i in 0 .. Array2D.length2 input - 1 do List.ofArray input[*,i] |> List.rev }
-    |> Seq.map (roll [] [] >> List.mapi (fun i ch -> if ch = 'O' then i + 1 else 0))
-    |> Seq.sumBy Seq.sum
-    |> sprintf "%A"
+    List.map (roll [] [])
 
-let solveGold input =
-    "Not implemented"
+/// Count weight along the row axis (ie. to the right).
+let calcWeight =
+    Seq.sumBy (Seq.mapi (fun i ch -> if ch = 'O' then i + 1 else 0) >> Seq.sum)
+
+let rotRight =
+    List.transpose
+    >> List.map List.rev
+
+let solveSilver =
+    rotRight
+    >> rollStones
+    >> calcWeight
+    >> sprintf "%d"
+
+let solveGold grid =
+    let gen =
+        rollStones
+        >> rotRight >> rollStones
+        >> rotRight >> rollStones
+        >> rotRight >> rollStones
+        >> rotRight
+        >> fun g -> Some (calcWeight g, g)
+
+    Seq.unfold gen (rotRight grid)
+    |> Seq.take 1000
+    |> Seq.map (sprintf "%d")
+    |> String.concat "\n"
 
 [<Solution("2023", "14", "Parabolic Reflector Dish")>]
 let Solver = chainFileHandler parse solveSilver solveGold
