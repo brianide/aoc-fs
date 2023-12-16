@@ -5,6 +5,8 @@ open System.Text.RegularExpressions
 
 module Array2D  =
 
+    let inline dimensions arr = Array2D.length1 arr, Array2D.length2 arr
+
     let fold folder init arr =
         let mutable acc = init
         Array2D.iter (fun v -> acc <- folder acc v) arr
