@@ -25,12 +25,13 @@ let solveSilver grid =
     let inside (r, c) = 0 <= r && r < rows && 0 <= c && c < cols
     let neighbors state =
         seq {
-            if state.Moves > 0 then
-                yield { state with Pos = state.Pos .+ state.Dir; Moves = state.Moves - 1 }
+            if state.Moves < 3 then
+                yield { state with Pos = state.Pos .+ state.Dir; Moves = state.Moves + 1 }
 
             match state.Dir with
-            | 0, 1 | 0, -1 -> for i in [1, 0; -1, 0] do yield { state with Dir = i; Pos = state.Pos .+ i; Moves = 3 }
-            | 1, 0 | -1, 0 -> for i in [0, 1; 0, -1] do yield { state with Dir = i; Pos = state.Pos .+ i; Moves = 3 }
+            | 0, 1 | 0, -1 -> for i in [1, 0; -1, 0] do yield { state with Dir = i; Pos = state.Pos .+ i; Moves = 0 }
+            | 1, 0 | -1, 0 -> for i in [0, 1; 0, -1] do yield { state with Dir = i; Pos = state.Pos .+ i; Moves = 0 }
+            | 0, 0 -> for i in [0, 1; 1, 0] do yield { state with Dir = i; Pos = state.Pos .+ i; Moves = 0 }
             | x -> failwithf "Invalid direction: %A" x
         }
         |> Seq.filter (_.Pos >> inside)
@@ -40,17 +41,15 @@ let solveSilver grid =
 
     let pq = PriorityQueue<_,_>()
     let dist = Dictionary<_,_>()
-    let init = { Pos = 0, 0; Dir = 0, 1; Moves = 4; Lost = 0 }
-    let fin = (rows - 1, cols - 1)
+    let init = { Pos = 0, 0; Dir = 0, 0; Moves = 0; Lost = 0 }
+    let fin = rows - 1, cols - 1
     pq.Enqueue(init, 0)
-    dist.Add((0, 0), 0)
 
     while dist.ContainsKey fin |> not && pq.Count > 0 do
         let head = pq.Dequeue()
-        // printfn "%A" head
         for next in neighbors head do
             match dist.TryGetValue next.Pos with
-            | true, d when next.Lost < d -> pq.Enqueue(next, next.Lost); next.Lost
+            | true, d when next.Lost < d -> next.Lost
             | true, d -> d
             | false, _ -> pq.Enqueue(next, next.Lost); next.Lost
             |> fun n -> dist[next.Pos] <- n
