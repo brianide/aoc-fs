@@ -25,14 +25,15 @@ let solveSilver grid =
     let inside (r, c) = 0 <= r && r < rows && 0 <= c && c < cols
     let neighbors state =
         seq {
-            if state.Moves < 2 then
+            if state.Moves < 10 then
                 yield { state with Pos = state.Pos .+ state.Dir; Moves = state.Moves + 1 }
 
-            match state.Dir with
-            | 0, 1 | 0, -1 -> for i in [1, 0; -1, 0] do yield { state with Dir = i; Pos = state.Pos .+ i; Moves = 0 }
-            | 1, 0 | -1, 0 -> for i in [0, 1; 0, -1] do yield { state with Dir = i; Pos = state.Pos .+ i; Moves = 0 }
-            | 0, 0 -> for i in [0, 1; 1, 0] do yield { state with Dir = i; Pos = state.Pos .+ i; Moves = 0 }
-            | x -> failwithf "Invalid direction: %A" x
+            if state.Moves >= 4 || state.Dir = (0, 0) then
+                match state.Dir with
+                | 0, 1 | 0, -1 -> for i in [1, 0; -1, 0] do yield { state with Dir = i; Pos = state.Pos .+ i; Moves = 1 }
+                | 1, 0 | -1, 0 -> for i in [0, 1; 0, -1] do yield { state with Dir = i; Pos = state.Pos .+ i; Moves = 1 }
+                | 0, 0 -> for i in [0, 1; 1, 0] do yield { state with Dir = i; Pos = state.Pos .+ i; Moves = 1 }
+                | x -> failwithf "Invalid direction: %A" x
         }
         |> Seq.filter (_.Pos >> inside)
         |> Seq.map (fun state ->
