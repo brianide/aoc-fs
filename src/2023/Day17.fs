@@ -25,7 +25,7 @@ let solveSilver grid =
     let inside (r, c) = 0 <= r && r < rows && 0 <= c && c < cols
     let neighbors state =
         seq {
-            if state.Moves < 3 then
+            if state.Moves < 2 then
                 yield { state with Pos = state.Pos .+ state.Dir; Moves = state.Moves + 1 }
 
             match state.Dir with
@@ -40,21 +40,24 @@ let solveSilver grid =
             { state with Lost = state.Lost + grid[r, c] })
 
     let pq = PriorityQueue<_,_>()
-    let dist = Dictionary<_,_>()
+    let seen = HashSet<_>()
+    let keyFn state = state.Pos, state.Dir, state.Moves
     let init = { Pos = 0, 0; Dir = 0, 0; Moves = 0; Lost = 0 }
     let fin = rows - 1, cols - 1
     pq.Enqueue(init, 0)
 
-    while dist.ContainsKey fin |> not && pq.Count > 0 do
+    let rec recur () =
         let head = pq.Dequeue()
-        for next in neighbors head do
-            match dist.TryGetValue next.Pos with
-            | true, d when next.Lost < d -> next.Lost
-            | true, d -> d
-            | false, _ -> pq.Enqueue(next, next.Lost); next.Lost
-            |> fun n -> dist[next.Pos] <- n
-    
-    dist.GetValueOrDefault(fin, -1)
+        if head.Pos = fin then
+            head.Lost
+        else
+            for next in neighbors head do
+                if seen.Contains (keyFn next) |> not then
+                    seen.Add(keyFn next) |> ignore
+                    pq.Enqueue(next, next.Lost)
+            recur ()
+
+    recur ()
     |> sprintf "%d" 
 
 let solveGold grid =
