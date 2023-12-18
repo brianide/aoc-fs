@@ -42,6 +42,7 @@
     <Compile Include="2023/Day15.fs" />
     <Compile Include="2023/Day16.fs" />
     <Compile Include="2023/Day17.fs" />
+    <Compile Include="2023/Day18.fs" />
     <!--NEW-->
     <Compile Include="Program.fs" />
   </ItemGroup>
