@@ -115,5 +115,8 @@ module Map =
     let update k def fn map =
         Map.change k (function Some n -> Some (fn n) | None -> Some def) map
 
+    let alter k fn map =
+        Map.change k (function Some n -> Some (fn n) | None -> failwithf "Key not found: %A" k) map
+
 type Regex with
     member reg.MatchSeq = reg.Matches >> Seq.map _.Value

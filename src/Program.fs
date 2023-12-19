@@ -29,13 +29,14 @@ let main args =
         |> List.tryFind (fun (_, attr) -> attr.Year = year && attr.Id = day)
         |> function
         | Some (fn, attr) ->
-            let watch = Stopwatch()
+            // let watch = Stopwatch()
 
-            watch.Start()
+            // watch.Start()
             let res = fn rest
-            watch.Stop()
+            // watch.Stop()
 
-            $"{res}\n\n{attr.Name}\nRan in {watch.ElapsedMilliseconds}ms"
+            // $"{res}\n\n{attr.Name}\nRan in {watch.ElapsedMilliseconds}ms"
+            res
         | None -> failwithf "Invalid solution specified\n\n%s" usage
         |> printfn "%s"
         0
