@@ -79,8 +79,11 @@ module Gold =
     
     let countPaths flows =
         let obj = "xmas" |> Seq.map (fun ch -> ch, (1, 4000)) |> Map.ofSeq
-        let trimGreater min (lo, hi) = (min + 1 |> max lo), hi
-        let trimLess max (lo, hi) = lo, (max - 1 |> min hi)
+        let splitGreater k n obj =
+            Map.alter k (fun (_, hi) -> n + 1, hi) obj, Map.alter k (fun (lo, _) -> lo, n) obj
+        let splitLess k n obj =
+            Map.alter k (fun (lo, _) -> lo, n - 1) obj, Map.alter k (fun (_, hi) -> n, hi) obj
+        
         let checkRanges = Map.forall (fun _ (lo, hi) -> lo < hi)
 
         let rec recur obj = function
@@ -90,21 +93,25 @@ module Gold =
             0L
         | flowName ->
             Map.find flowName flows
-            |> List.sumBy (
-                function
-                | GreaterThan (ch, cap), dst ->
-                    let trimmed = Map.alter ch (trimGreater cap) obj
-                    if checkRanges trimmed then
-                        recur trimmed dst
-                    else
-                        0
-                | LessThan (ch, bot), dst ->
-                    let trimmed = Map.alter ch (trimLess bot) obj
-                    if checkRanges trimmed then
-                        recur trimmed dst
-                    else
-                        0
-                | Always, dst -> recur obj dst)
+            |> List.fold (fun (total, obj) flow ->
+                if checkRanges obj = false then
+                    total, obj
+                else
+                    match flow with 
+                    | GreaterThan (ch, cap), dst ->
+                        let trimmed, remaining = splitGreater ch cap obj
+                        if checkRanges trimmed then
+                            total + (recur trimmed dst), remaining
+                        else
+                            total, remaining
+                    | LessThan (ch, bot), dst ->
+                        let trimmed, remaining = splitLess ch bot obj
+                        if checkRanges trimmed then
+                            total + (recur trimmed dst), remaining
+                        else
+                            total, remaining
+                    | Always, dst -> total + (recur obj dst), obj) (0L, obj)
+            |> fst
 
         recur obj "in"
 
