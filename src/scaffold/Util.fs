@@ -66,6 +66,9 @@ module Collections =
         let enqueue e q =
             match q with Queue (ins, outs) -> Queue(e :: ins, outs)
         
+        let enqueueAll es q =
+            match q with Queue (ins, outs) -> Queue(List.concat [List.rev es; ins], outs)
+
         let dequeue = function
             | Queue ([], []) -> failwith "No elements remaining"
             | Queue (ins, e :: outs) -> (e, Queue (ins, outs))
