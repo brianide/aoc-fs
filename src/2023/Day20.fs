@@ -54,6 +54,8 @@ let solveSilver conf =
             | Sim.Conjunction m -> m.Memory <- Map.add src false m.Memory
 
     let pushButton = ("button", "broadcaster", false)
+    let mutable taps = Map.empty
+
     let rec pulse queue rem (lo, hi) =
         if Queue.isEmpty queue && rem = 0 then
             lo * hi
@@ -61,8 +63,11 @@ let solveSilver conf =
             pulse (Queue.enqueue pushButton queue) (rem - 1) (lo, hi)
         else
             let (source, key, high), queue = Queue.dequeue queue
-            // printfn "%A" (source, key, high)
             let lo, hi = if high then lo, hi + 1 else lo + 1, hi
+
+            if high && key = "ll" then
+                let cycle = 100000 - rem
+                taps <- Map.update source [cycle] (fun cs -> cycle :: cs) taps
 
             let modu, dests = getModule key
             match modu with
@@ -80,8 +85,11 @@ let solveSilver conf =
                 List.map (fun s -> key, s, not allHigh) dests
             |> fun es -> pulse (Queue.enqueueAll es queue) rem (lo, hi)
 
-    pulse Queue.empty 1000 (0, 0)
-    |> sprintf "%d"
+    pulse Queue.empty 100000 (0, 0) |> printf "%d"
+
+    Map.iter (fun _ v -> List.pairwise v |> List.map (fun (a, b) -> a - b) |> printfn "%A") taps
+
+    ""
 
 let solveGold input =
     "Not implemented"
