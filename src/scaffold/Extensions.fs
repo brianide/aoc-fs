@@ -7,6 +7,10 @@ module Array2D  =
 
     let inline dimensions arr = Array2D.length1 arr, Array2D.length2 arr
 
+    let isInside r c arr = 0 <= r && r < Array2D.length1 arr && 0 <= c && c < Array2D.length2 arr
+
+    let indices arr = seq { for r in 0 .. Array2D.length1 arr - 1 do for c in 0 .. Array2D.length2 arr - 1 do r, c }
+
     let fold folder init arr =
         let mutable acc = init
         Array2D.iter (fun v -> acc <- folder acc v) arr
