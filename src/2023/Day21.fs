@@ -24,21 +24,24 @@ let solveSilver (grid, start) =
             if Array2D.isInside pr pc grid && grid[pr, pc] = '.' then
                 pr, pc ]
 
-    let rec bfs queue dist =
+    let rec bfs queue seen dist =
         if dist = 0 then
-            queue
+            seen
         else
             set [ for (r, c) in queue do yield! neighbors r c ]
-            |> fun ns -> bfs ns (dist - 1)
+            |> Set.filter (fun p -> Map.containsKey p seen |> not)
+            |> fun ns ->
+                let seen = Seq.fold (fun acc p -> Map.add p dist acc) seen ns
+                bfs ns seen (dist - 1)
     
-    bfs (Set.singleton start) 64
-    |> Set.count
+    bfs (Set.singleton start) Map.empty 64
+    |> Map.filter (fun _ v -> v % 2 = 1)
+    |> Map.count
     |> (+) 1
-    |> sprintf "%d"
+    |> sprintf "%A"
 
 let solveGold (grid: char[,], start) =
     let rows, cols = Array2D.dimensions grid
-    Scaffold.Image.saveToPGM cols rows "foo.pgm" (fun r c -> if grid[r, c] = '#' then byte 0xFF else byte 0x00)
     "Not implemented"
 
 [<Solution("2023", "21", "Step Counter")>]
