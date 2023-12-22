@@ -1,6 +1,7 @@
 module Scaffold.Extensions
 
 open System.Collections
+open System.Collections.Generic
 open System.Text.RegularExpressions
 
 module Array2D  =
@@ -124,3 +125,8 @@ module Map =
 
 type Regex with
     member reg.MatchSeq = reg.Matches >> Seq.map _.Value
+
+type Dictionary<'K,'V> with
+    member dic.TryFind k = match dic.TryGetValue k with true, v -> Some v | false, _ -> None
+    member dic.Change k fn = match dic.TryFind k |> fn with | Some v -> dic[k] <- v | None -> ()
+    member dic.Update k def fn = dic[k] <- match dic.TryFind k with Some v -> fn v | None -> def
