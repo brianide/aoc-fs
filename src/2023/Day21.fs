@@ -18,27 +18,33 @@ let parse path =
 let inline tadd (a, b) (x, y) = a + x, b + y
 
 let solveSilver (grid, start) =
-    let neighbors r c =
-        [ for off in [0, 1; 1, 0; 0, -1; -1, 0] do
-            let (pr, pc) = tadd (r, c) off
-            if Array2D.isInside pr pc grid && grid[pr, pc] = '.' then
-                pr, pc ]
+    let rows, cols = Array2D.dimensions grid
+    let twrap (r, c) =
+        let r' = (r % rows + rows) % rows
+        let c' = (c % cols + cols) % cols
+        r', c'
 
+    let neighbors p =
+        [ for off in [0, 1; 1, 0; 0, -1; -1, 0] do
+            let po = tadd p off
+            let wr, wc =  twrap po
+            if grid[wr, wc] <> '#' then po ]
+
+    let reps = 65 + 131 * 2
     let rec bfs queue seen dist =
         if dist = 0 then
             seen
         else
-            set [ for (r, c) in queue do yield! neighbors r c ]
+            set [ for p in queue do yield! neighbors p ]
             |> Set.filter (fun p -> Map.containsKey p seen |> not)
             |> fun ns ->
-                let seen = Seq.fold (fun acc p -> Map.add p dist acc) seen ns
+                let seen = Seq.fold (fun acc p -> Map.add p (reps - dist) acc) seen ns
                 bfs ns seen (dist - 1)
     
-    bfs (Set.singleton start) Map.empty 64
-    |> Map.filter (fun _ v -> v % 2 = 1)
+    bfs (Set.singleton start) Map.empty reps
+    |> Map.filter (fun _ v -> v % 2 <> reps % 2)
     |> Map.count
-    |> (+) 1
-    |> sprintf "%A"
+    |> sprintf "%d"
 
 let solveGold (grid: char[,], start) =
     let rows, cols = Array2D.dimensions grid
