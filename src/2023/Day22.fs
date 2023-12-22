@@ -33,11 +33,11 @@ let parse =
 
 let getSupportGraph input =
     let tops = Dictionary<_,_>()
-    let suppFor = Dictionary<_,_>()
-    let suppBy = Dictionary<_,_>()
+    let supports = Dictionary<_,_>()
+    let dependents = Dictionary<_,_>()
 
     for (i, verts) in List.indexed input do
-        let zv, supports =
+        let zv, supps =
             verts
             |> List.choose (fun (x, y, _) -> tops.TryFind (x, y))
             |> List.groupBy snd
@@ -50,35 +50,35 @@ let getSupportGraph input =
         for (x, y, zo) in verts do tops[(x, y)] <- i, zv + zo
 
         // Record support relationships
-        for ind in supports do
-            suppFor.Update ind [i] (fun is -> i :: is)
-            suppBy.Update i [ind] (fun inds -> ind :: inds)
+        for ind in supps do
+            supports.Update i [ind] (fun inds -> ind :: inds)
+            dependents.Update ind [i] (fun is -> i :: is)
 
-    Map.ofDict suppBy, Map.ofDict suppFor, List.length input
+    Map.ofDict supports, Map.ofDict dependents, List.length input
 
-let solveSilver (suppBy, _, numBricks) =
-    Map.values suppBy
+let solveSilver (supports, _, numBricks) =
+    Map.values supports
     |> Seq.choose Seq.tryExactlyOne
     |> set
     |> Set.difference (set [0 .. numBricks - 1])
     |> Set.count
     |> sprintf "%d"
 
-let solveGold (suppBy, suppFor, numBricks) =
+let solveGold (supports, dependents, numBricks) =
     let numDepending i =
         let rec bfs queue fallen =
             if Queue.isEmpty queue then
-                Set.count fallen
+                Set.count fallen - 1
             else
                 let ind, queue = Queue.dequeue queue
                 let fallen = Set.add ind fallen
 
-                [ for dep in Map.getOrDefault ind [] suppFor do
-                    if Map.find dep suppBy |> List.forall (fun s -> Set.contains s fallen) then
+                [ for dep in Map.getOrDefault ind [] dependents do
+                    if Map.find dep supports |> List.forall (fun s -> Set.contains s fallen) then
                         yield dep ]
                 |> fun es -> bfs (Queue.enqueueAll es queue) fallen
         
-        (bfs (Queue.singleton i) Set.empty) - 1
+        bfs (Queue.singleton i) Set.empty
 
     List.sumBy numDepending [0 .. numBricks - 1]
     |> sprintf "%d"
