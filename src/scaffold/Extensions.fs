@@ -123,6 +123,8 @@ module Map =
     let alter k fn map =
         Map.change k (function Some n -> Some (fn n) | None -> failwithf "Key not found: %A" k) map
 
+    let ofDict (dic: Dictionary<_,_>) = dic |> Seq.map (fun kv -> kv.Key, kv.Value) |> Map.ofSeq
+
 type Regex with
     member reg.MatchSeq = reg.Matches >> Seq.map _.Value
 
