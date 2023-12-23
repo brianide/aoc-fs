@@ -4,14 +4,16 @@ open System.IO
 open Scaffold.Attributes
 open Scaffold.Handlers
 open Scaffold.Extensions
-open Scaffold.Util.Patterns
-
-let parse = File.ReadAllLines >> array2D
 
 type Node =
 | Start
 | Junction of int * int
 | Finish
+
+type Graph = Map<Node, List<Node * int>>
+
+let parse =
+    File.ReadAllLines >> array2D
 
 let getJunctionGraph grid =
     let rows, cols = Array2D.dimensions grid
@@ -53,11 +55,10 @@ let getJunctionGraph grid =
                 (lastJunc, (junc, dist + 1)) :: subs
 
     dfs Start 1 (-1, -1) start
-    |> List.fold (fun map (k, v) -> Map.update k [v] (fun vs -> v :: vs) map) Map.empty
-    |> Map.map (fun _ v -> set v)
+    |> set
+    |> Seq.fold (fun map (k, v) -> Map.update k [v] (fun vs -> v :: vs) map) Map.empty
 
-let solveSilver grid =
-    let graph = getJunctionGraph grid
+let solveSilver (graph: Graph) =
     let rec dfs curr length =
         if curr = Finish then
             length
@@ -67,8 +68,29 @@ let solveSilver grid =
     dfs Start 0
     |> sprintf "%d"
 
-let solveGold input =
-    "Not implemented"
+let solveGold (graph: Graph) =
+    let undir =
+        let comb src map (dest, dist) =
+            if src = Start then
+                map
+            else
+                match dest with
+                | Start | Finish -> map
+                | Junction _ -> Map.update dest [src, dist] (fun ds -> (src, dist) :: ds) map
+
+        Map.fold (fun map k cs -> List.fold (comb k) map cs) graph graph
+    
+    let rec dfs curr length seen =
+        if Set.contains curr seen then
+            0
+        else if curr = Finish then
+            length
+        else
+            let seen = Set.add curr seen
+            List.max [ for (next, dist) in Map.find curr undir do dfs next (length + dist) seen ]
+
+    dfs Start 0 Set.empty
+    |> sprintf "%d"
 
 [<Solution("2023", "23", "A Long Walk")>]
-let Solver = chainFileHandler parse solveSilver solveGold
+let Solver = chainFileHandler (parse >> getJunctionGraph) solveSilver solveGold
