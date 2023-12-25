@@ -6,7 +6,6 @@ open Scaffold.Parsec
 open Scaffold.Attributes
 open Scaffold.Handlers
 open Scaffold.Extensions
-open Scaffold.Util.Patterns
 
 let parse =
     let vec = tuple3 (pfloat .>> skipString "," .>> spaces) (pfloat .>> skipString "," .>> spaces) pfloat
@@ -47,7 +46,19 @@ let solveSilver input =
     |> sprintf "%A"
 
 let solveGold input =
-    "Not implemented"
+    let intDec = sprintf "(declare-const %s Int)"
+    let tDec = sprintf "(declare-const t%d Int)" 
+    [ for lbl in  ["pxi"; "pyi"; "pzi"; "vxi"; "vyi"; "vzi"] do yield intDec lbl
+      for ind in [0 .. List.length input - 1] do yield tDec ind
+      for (ind, ((px, py, pz), (vx, vy, vz))) in List.indexed input do
+        let tv = sprintf "t%d" ind
+        let x, y, z = int64 (px + vx), int64 (py + vy), int64 (pz + vz)
+        yield sprintf "(assert (= (* %s %d) (* %s (+ %s %s))))" tv x tv "pxi" "vxi"
+        yield sprintf "(assert (= (* %s %d) (* %s (+ %s %s))))" tv y tv "pyi" "vyi"
+        yield sprintf "(assert (= (* %s %d) (* %s (+ %s %s))))" tv z tv "pzi" "vzi"
+      yield "(check-sat)"
+      yield "(get-model)" ]
+    |> String.concat "\n"
 
 [<Solution("2023", "24", "Never Tell Me The Odds")>]
 let Solver = chainFileHandler parse solveSilver solveGold
